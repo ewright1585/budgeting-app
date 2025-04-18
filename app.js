@@ -1,3 +1,4 @@
+// app.js
 import {
     db,
     auth,
@@ -21,6 +22,7 @@ import {
   const authSection = document.getElementById("auth-section");
   const appSection = document.getElementById("app-section");
   const categorySelect = document.getElementById("category");
+  const payPeriodSelect = document.getElementById("pay-period");
   
   const editModalEl = document.getElementById("editModal");
   const editModal = new bootstrap.Modal(editModalEl);
@@ -49,12 +51,34 @@ import {
       authSection.style.display = "none";
       appSection.style.display = "block";
       loadCategories();
+      generatePayPeriods();
       loadExpenses();
     } else {
       authSection.style.display = "block";
       appSection.style.display = "none";
     }
   });
+  
+  function generatePayPeriods(startDate = "2025-04-10", numberOfPeriods = 26) {
+    const options = ['<option value="all">All Expenses</option>', '<option value="month">This Month</option>'];
+    const base = new Date(startDate);
+    const now = new Date();
+  
+    for (let i = 0; i < numberOfPeriods; i++) {
+      const start = new Date(base);
+      start.setDate(start.getDate() + i * 14);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 13);
+      const label = `${start.toISOString().split("T")[0]} to ${end.toISOString().split("T")[0]}`;
+  
+      const isCurrent = now >= start && now <= end;
+      options.push(`<option value="${start.toISOString()}" ${isCurrent ? 'selected' : ''}>${label}</option>`);
+    }
+  
+    payPeriodSelect.innerHTML = options.join('');
+  }
+  
+  payPeriodSelect.addEventListener("change", loadExpenses);
   
   async function loadCategories() {
     categorySelect.innerHTML = `<option value="">Select Category</option>`;
@@ -73,6 +97,19 @@ import {
     expenseList.innerHTML = '';
     paidExpenseList.innerHTML = '';
   
+    const selectedPeriod = payPeriodSelect.value;
+    let start = null, end = null;
+  
+    if (selectedPeriod === "month") {
+      const now = new Date();
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    } else if (selectedPeriod !== "all") {
+      start = new Date(selectedPeriod);
+      end = new Date(start);
+      end.setDate(end.getDate() + 13);
+    }
+  
     const q = query(collection(db, "monthlyExpenses"), where("uid", "==", currentUser.uid));
     const snapshot = await getDocs(q);
   
@@ -81,6 +118,10 @@ import {
   
     snapshot.forEach((docSnap) => {
       const data = docSnap.data();
+      const expenseDate = new Date(data.date);
+  
+      if (start && (expenseDate < start || expenseDate > end)) return;
+  
       const li = document.createElement("li");
       li.className = "list-group-item d-flex justify-content-between align-items-center";
   

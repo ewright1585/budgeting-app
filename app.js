@@ -60,7 +60,11 @@ import {
   });
   
   function generatePayPeriods(startDate = "2025-04-10", numberOfPeriods = 26) {
-    const options = ['<option value="all">All Expenses</option>', '<option value="month">This Month</option>'];
+    const options = [
+      '<option value="all">All Expenses</option>',
+      '<option value="month">This Month</option>',
+      ''
+    ];
     const base = new Date(startDate);
     const now = new Date();
   
@@ -70,15 +74,30 @@ import {
       const end = new Date(start);
       end.setDate(end.getDate() + 13);
       const label = `${start.toISOString().split("T")[0]} to ${end.toISOString().split("T")[0]}`;
-  
       const isCurrent = now >= start && now <= end;
       options.push(`<option value="${start.toISOString()}" ${isCurrent ? 'selected' : ''}>${label}</option>`);
     }
   
     payPeriodSelect.innerHTML = options.join('');
+  
+    
+  
+    payPeriodSelect.addEventListener("change", () => {
+      const selected = payPeriodSelect.value;
+      const customRangeFields = document.getElementById("custom-range-fields");
+      customRangeFields.style.display = selected === "custom" ? "flex" : "none";
+      loadExpenses();
+    });
   }
   
   payPeriodSelect.addEventListener("change", loadExpenses);
+  
+  
+  
+      endInput.addEventListener("change", () => {
+        if (payPeriodSelect.value === "custom") loadExpenses();
+      });
+ 
   
   async function loadCategories() {
     categorySelect.innerHTML = `<option value="">Select Category</option>`;
@@ -99,7 +118,6 @@ import {
   
     const selectedPeriod = payPeriodSelect.value;
     let start = null, end = null;
-  
     if (selectedPeriod === "month") {
       const now = new Date();
       start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -120,7 +138,7 @@ import {
       const data = docSnap.data();
       const expenseDate = new Date(data.date);
   
-      if (start && (expenseDate < start || expenseDate > end)) return;
+      if (start && end && (expenseDate < start || expenseDate > end)) return;
   
       const li = document.createElement("li");
       li.className = "list-group-item d-flex justify-content-between align-items-center";
@@ -135,7 +153,7 @@ import {
       });
   
       const label = document.createElement("span");
-      label.textContent = `${data.date} - ${data.name}: $${parseFloat(data.amount).toFixed(2)}`;
+      label.innerHTML = `${data.date} - ${data.name}: $${parseFloat(data.amount).toFixed(2)} <span class='badge bg-secondary ms-2'>${data.category}</span>`;
   
       const editBtn = document.createElement("button");
       editBtn.className = "btn btn-sm btn-outline-primary ms-2";
@@ -172,6 +190,7 @@ import {
     document.getElementById("total-unpaid").innerHTML = `Unpaid Total: $${unpaidTotal.toFixed(2)}`;
     document.getElementById("total-paid").innerHTML = `Paid Total: $${paidTotal.toFixed(2)}`;
   }
+  
   
   expenseForm.addEventListener("submit", async (e) => {
     e.preventDefault();

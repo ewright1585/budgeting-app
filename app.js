@@ -82,22 +82,12 @@ import {
   
     
   
-    payPeriodSelect.addEventListener("change", () => {
-      const selected = payPeriodSelect.value;
-      const customRangeFields = document.getElementById("custom-range-fields");
-      customRangeFields.style.display = selected === "custom" ? "flex" : "none";
-      loadExpenses();
-    });
+    
   }
   
   payPeriodSelect.addEventListener("change", loadExpenses);
   
-  
-  
-      endInput.addEventListener("change", () => {
-        if (payPeriodSelect.value === "custom") loadExpenses();
-      });
- 
+
   
   async function loadCategories() {
     categorySelect.innerHTML = `<option value="">Select Category</option>`;

@@ -62,11 +62,18 @@ function loadExpenses(categoryFilter = '', dateFilter = '') {
 }
 
 function renderExpenses(data) {
+  const selectedPeriod = document.getElementById('filterPayPeriod')?.value;
+  let start = null, end = null;
+  if (selectedPeriod) {
+    [start, end] = selectedPeriod.split('|').map(date => new Date(date + 'T00:00:00'));
+  }
   expenseList.innerHTML = '';
   data.forEach(d => {
     const li = document.createElement('li');
-    const isOverdue = new Date(d.dueDate + 'T00:00:00') < new Date();
-    li.className = 'list-group-item d-flex justify-content-between align-items-start' + (isOverdue ? ' list-group-item-danger' : '');
+    const dueDate = new Date(d.dueDate + 'T00:00:00');
+    const isOverdue = dueDate < new Date();
+    const isInPeriod = start && end && dueDate >= start && dueDate <= end;
+    li.className = 'list-group-item d-flex justify-content-between align-items-start' + (isOverdue ? ' list-group-item-danger' : '') + (isInPeriod ? ' border border-3 border-primary' : '');
     li.innerHTML = `
       <div class="me-3">
         <div class="form-check" title="Mark this expense as paid">
@@ -77,7 +84,7 @@ function renderExpenses(data) {
       <div class="flex-grow-1">
         <strong>${d.name}</strong> - $${d.amount}
         <small class="text-muted">(${d.category})</small><br>
-        <small>Due: ${new Date(d.dueDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}${isOverdue ? ' <span class=\"badge bg-danger ms-2\">Overdue</span>' : ''}</small>
+        <small>Due: ${dueDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}${isOverdue ? ' <span class=\"badge bg-danger ms-2\">Overdue</span>' : ''}</small>
       </div>
       <div>
         <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${d.id}')">Edit</button>
@@ -85,7 +92,8 @@ function renderExpenses(data) {
     `;
     expenseList.appendChild(li);
   });
-}
+  };
+
 
 function loadPaidExpenses() {
   db.collection('paidExpenses').orderBy('dueDate').get().then(snapshot => {
@@ -199,7 +207,6 @@ function checkAndGenerateRecurringExpenses() {
       localStorage.setItem(key, 'true');
     });
 };
-
 function drawChart(data) {
   const categories = {};
   data.forEach(exp => {

@@ -1,49 +1,27 @@
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    color: #333;
-    padding: 20px;
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
-  .container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
+  h1, h3 {
+    color: #343a40;
   }
   
-  form input, form select, form button {
-    padding: 10px;
-    margin: 5px 0;
-    width: 100%;
-    box-sizing: border-box;
+  form textarea,
+  form input,
+  form select {
+    font-size: 1rem;
   }
   
-  button {
-    background: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
+  #expenseList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
   }
   
-  button:hover {
-    background: #0056b3;
-  }
-  
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  ul li {
-    background: #eee;
-    margin: 5px 0;
-    padding: 10px;
-    border-radius: 5px;
-  }
-  
-  input[type="checkbox"] {
-    margin-right: 10px;
+  canvas {
+    max-width: 100%;
+    height: auto;
   }
   
